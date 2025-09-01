@@ -1,0 +1,31 @@
+.create-post-container {
+  max-width: 600px;
+  margin: 40px auto;
+  padding: 20px;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+}
+
+.create-post-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.create-post-form textarea {
+  width: 100%;
+  padding: 10px;
+  resize: vertical;
+}
+
+.create-post-form input[type="file"] {
+  padding: 6px;
+}
+
+.create-post-form button {
+  padding: 10px 16px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
