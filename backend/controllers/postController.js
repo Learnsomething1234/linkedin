@@ -9,6 +9,7 @@ const createPost = async (req, res) => {
 
   try {
     const user = await User.findById(id);
+    console.log(id);
     if (!user) return res.json({ message: "user not found" });
 
     const post = new Post({
@@ -112,11 +113,7 @@ const likes = async (req, res) => {
 
 
 const fetchallPost=async(req,res)=>{
-    const {token}=req.params;
-    
     try{
-        const user=await User.findOne({token});
-        if(!user) return res.json({message:"User not Found"})
         const post=await Post.find({}).populate("userId");
 return res.json(post);
     }catch(e){
@@ -127,6 +124,7 @@ return res.json(post);
 
 const fetchpost=async(req,res)=>{
     const {postId}=req.params;
+    
     try{
         let post=await Post.findById(postId).populate("userId comment");
         if(!post) return res.json({message:"Post not found"});

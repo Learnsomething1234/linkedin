@@ -8,6 +8,7 @@ const Education=require("../models/education");
 const work = require("../models/work");
 const cloudinary = require("../utils/cloudinary");
 const fs = require("fs");
+const PDFDocument=require("pdfkit");
 
 
 const signup=async(req,res)=>{
@@ -308,7 +309,143 @@ const fetchAllUsers=async(req,res)=>{
 // }
 
 
+const DownloadResume = async (req, res) => {
+  const { userId } = req.params;
+  try {
+    const user = await User.findById(userId).populate("work education");
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    const work=await Work.findOne({userId:userId});
+    
+    console.log(work.pastworks)
+
+    const doc = new PDFDocument();
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename=${user.name}_profile.pdf`
+    );
+    doc.pipe(res);
+
+    // Header
+    doc.fontSize(20).text(`${user.name}'s Profile`, { align: "center" });
+    doc.moveDown();
+
+    // Basic Info
+    doc.fontSize(12).text(`Name: ${user.name}`);
+    doc.text(`Email: ${user.email}`);
+    doc.moveDown();
+
+    // Work Experience
+    if (work && work.pastworks && work.pastworks.length > 0) {
+      doc.text("Work Experience:");
+      work.pastworks.forEach((work, index) => {
+        doc.text(`- Company: ${work.company}`);
+        doc.text(`  Position: ${work.position}`);
+        doc.text(`  Years: ${work.years}`);
+        doc.moveDown();
+      });
+    } else {
+      doc.text("No past work experience.");
+      doc.moveDown();
+    }
+
+    // Education
+    doc.text("Education:");
+    if (user.education && user.education.school) {
+      doc.text(`- School: ${user.education.school.name}`);
+      doc.text(`  Year: ${user.education.school.year}`);
+      doc.text(`  Marks: ${user.education.school.marks}`);
+      doc.moveDown();
+    }
+
+    if (user.education && user.education.college) {
+      doc.text(`- College: ${user.education.college.cname}`);
+      doc.text(`  Year: ${user.education.college.cyear}`);
+      doc.text(`  Marks: ${user.education.college.cmarks}`);
+      doc.moveDown();
+    }
+
+    if (user.education && user.education.degree) {
+      doc.text(`- Degree: ${user.education.degree.dname}`);
+      doc.text(`  Year: ${user.education.degree.dyear}`);
+      doc.text(`  Marks: ${user.education.degree.dmarks}`);
+      doc.moveDown();
+    }
+
+    doc.end();
+
+  } catch (e) {
+    console.error("PDF Generation Error:", e.message);
+    return res.status(500).json({ error: e.message });
+  }
+};
+
+// POST /api/connections/request
+const sentRequest=async (req, res) => {
+  const { senderId, receiverId } = req.body;
+
+  try {
+    // Prevent duplicate requests
+    const exists = await Connection.findOne({
+      sender: senderId,
+      receiver: receiverId,
+      status: 'pending'
+    });
+
+    if (exists) {
+      return res.status(400).json({ message: 'Request already sent' });
+    }
+
+    const connection = new Connection({ sender: senderId, receiver: receiverId });
+    await connection.save();
+
+    res.status(201).json({ message: 'Request sent successfully' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+}
+
+const getAllRequest= async (req, res) => {
+  try {
+    const sentRequests = await Connection.find({ sender: req.params.userId, status: 'pending' })
+      .populate('receiver', 'name email');
+
+    res.status(200).json(sentRequests);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+}
+
+const acceptRequest= async (req, res) => {
+  const { senderId, receiverId } = req.body;
+
+  try {
+    const connection = await Connection.findOne({
+      sender: senderId,
+      receiver: receiverId,
+      status: 'pending'
+    });
+
+    if (!connection) {
+      return res.status(404).json({ message: 'Request not found' });
+    }
+
+    connection.status = 'accepted';
+    await connection.save();
+
+    res.status(200).json({ message: 'Request accepted' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+}
 
 
-module.exports={signup,login,userEducation,createWork,addWork,fetchUser,fetchAllUsers,updateProfile
+
+
+
+
+
+module.exports={signup,login,userEducation,createWork,addWork,fetchUser,fetchAllUsers,updateProfile,DownloadResume,sentRequest,getAllRequest,acceptRequest
 }

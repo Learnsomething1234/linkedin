@@ -17,6 +17,7 @@ const main=async()=>{
 app.use(User)
 app.use(Post);
 app.use(Comment);
+app.use(express.static("/upload"));
 
 app.listen(PORT,(req,res)=>{
     console.log("Server is Learning in PORT",PORT);

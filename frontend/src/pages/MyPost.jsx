@@ -5,8 +5,9 @@ import "bootstrap-icons/font/bootstrap-icons.css";
 import "../App.css";
 import Navbar from "./Navbar";
 
-export default function MyPost() {
+export default function Home() {
   const token = localStorage.getItem("token");
+  const userId=localStorage.getItem("userId");
   const [posts, setPosts] = useState([]);  // Ensure posts is an array
   const [likedPosts, setLikedPosts] = useState(new Set());
 
@@ -26,13 +27,13 @@ export default function MyPost() {
         });
 
         console.log(res.data);
-        // Ensure the data returned is an array of posts
-        if (Array.isArray(res.data)) {
-            const result=res.data
-          setPosts(result.filter((prev)=>prev.userId==userId));
-        } else {
-          console.error("Expected an array of posts but got", res.data);
-        }
+        const result=res.data
+        console.log((result.filter((prev)=>{prev.userId._id==userId
+          console.log(`hd`,prev.userId._id,userId)
+        })))
+        
+          setPosts(result.filter(prev=>prev.userId._id==userId));
+       
       } catch (e) {
         console.error("Error fetching posts", e);
       }
@@ -79,7 +80,7 @@ export default function MyPost() {
   };
 
   return (
-    <div><Navbar />
+   <div><Navbar />
     <div className="posts-container">
       {posts.length === 0 ? (
         <p>No posts to display</p>

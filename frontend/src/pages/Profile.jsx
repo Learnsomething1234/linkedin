@@ -20,6 +20,34 @@ export default function UserProfilePage() {
   const [present, setPresentWork] = useState({ pcompany: "", pposition: "" });
 
   // Image upload handlers
+
+
+  const handleDownload = async () => {
+    try {
+      const response = await axios.get(`http://localhost:8080/download/${userId}`, {
+        responseType: 'blob', // Important to handle binary data
+      });
+
+      // Create a blob URL and simulate download
+      const url = window.URL.createObjectURL(new Blob([response.data], { type: 'application/pdf' }));
+      const link = document.createElement('a');
+      link.href = url;
+
+      // Optional: filename from backend header or default
+      const filename = response.headers['content-disposition']
+        ? response.headers['content-disposition'].split('filename=')[1]
+        : 'resume.pdf';
+
+      link.setAttribute('download', filename.replace(/"/g, '')); // Remove quotes if any
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Error downloading resume:", error);
+      alert("Failed to download resume. Please try again.");
+    }
+  };
   const handleImageClick = () => {
     document.getElementById("profileInput").click();
   };
@@ -278,6 +306,7 @@ export default function UserProfilePage() {
           </div>
         )}
       </div>
+      <button onClick={handleDownload}>Download Resume</button>
     </>
   );
 }

@@ -7,6 +7,7 @@ import Navbar from "./Navbar";
 
 export default function Home() {
   const token = localStorage.getItem("token");
+  const userId=localStorage.getItem("userId");
   const [posts, setPosts] = useState([]);  // Ensure posts is an array
   const [likedPosts, setLikedPosts] = useState(new Set());
 
@@ -26,12 +27,9 @@ export default function Home() {
         });
 
         console.log(res.data);
-        // Ensure the data returned is an array of posts
-        if (Array.isArray(res.data)) {
+        
           setPosts(res.data);
-        } else {
-          console.error("Expected an array of posts but got", res.data);
-        }
+       
       } catch (e) {
         console.error("Error fetching posts", e);
       }
